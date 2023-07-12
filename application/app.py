@@ -43,6 +43,7 @@ from worker import ingest_worker
 
 # os.environ["LANGCHAIN_HANDLER"] = "langchain"
 
+# openai.log = "debug"
 print(f"loaded settings: {settings.__dict__}")
 
 logger = logging.getLogger(__name__)
@@ -141,7 +142,7 @@ def get_docsearch(vectorstore, embeddings_key):
             openai_embeddings = OpenAIEmbeddings(
                 model=settings.AZURE_EMBEDDINGS_DEPLOYMENT_NAME,
                 deployment=settings.AZURE_EMBEDDINGS_DEPLOYMENT_NAME,
-                openai_api_key=os.environ["OPENAI_API_KEY"],
+                openai_api_key=embeddings_key,
                 openai_api_base=os.environ["OPENAI_API_BASE"],
                 openai_api_type=os.environ["OPENAI_API_TYPE"],
                 openai_api_version=os.environ["OPENAI_API_VERSION"]
@@ -321,7 +322,9 @@ def api_answer():
                             messages_combine.append(HumanMessagePromptTemplate.from_template(i["prompt"]))
                             messages_combine.append(AIMessagePromptTemplate.from_template(i["response"]))
             messages_combine.append(HumanMessagePromptTemplate.from_template("{question}"))
+            print(f"{messages_combine=}")
             p_chat_combine = ChatPromptTemplate.from_messages(messages_combine)
+            print(f"{p_chat_combine=}")
         elif settings.LLM_NAME == "openai":
             llm = OpenAI(openai_api_key=api_key, temperature=0)
         elif settings.LLM_NAME == "manifest":
@@ -337,7 +340,7 @@ def api_answer():
 
         if settings.LLM_NAME == "openai_chat":
             question_generator = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
-            doc_chain = load_qa_chain(llm, chain_type="map_reduce", combine_prompt=p_chat_combine)
+            doc_chain = load_qa_chain(llm, chain_type="map_reduce", combine_prompt=p_chat_combine, verbose=True)
             chain = ConversationalRetrievalChain(
                 retriever=docsearch.as_retriever(k=2),
                 question_generator=question_generator,

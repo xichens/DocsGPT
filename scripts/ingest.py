@@ -15,6 +15,7 @@ from parser.py2doc import extract_functions_and_classes as extract_py
 from parser.py2doc import transform_to_docs
 from parser.schema.base import Document
 from parser.token_func import group_split
+from langchain.text_splitter import MarkdownTextSplitter
 
 dotenv.load_dotenv()
 
@@ -56,6 +57,22 @@ def ingest(yes: bool = typer.Option(False, "-y", "--yes", prompt=False,
     """
 
     def process_one_docs(directory, folder_name):
+        # doc_reader = SimpleDirectoryReader(input_dir=directory, input_files=file, recursive=recursive,
+        #                                  required_exts=formats, num_files_limit=limit,
+        #                                  exclude_hidden=exclude, file_metadata=metadata_from_filename)
+        # markdown_splitter = MarkdownTextSplitter(chunk_size=256, chunk_overlap=0)
+
+        # file_lst = doc_reader.input_files
+        # docs = []
+        # for file_ii in file_lst:
+        #     with open(file_ii, "r") as f:
+        #         md_text = f.read()
+        #     docs_file = markdown_splitter.create_documents([md_text])
+        #     docs_file = [d for d in docs_file if len(d.page_content) > 5]
+        #     for d in docs_file:
+        #         d.metadata.update({"title": file_ii.name})
+        #     docs.extend(docs_file)
+
         raw_docs = SimpleDirectoryReader(input_dir=directory, input_files=file, recursive=recursive,
                                          required_exts=formats, num_files_limit=limit,
                                          exclude_hidden=exclude, file_metadata=metadata_from_filename).load_data()
